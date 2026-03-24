@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}사용 방법 설명서 - 네이버 부동산 크롤링{% endblock %}
+
+{% block content %}
+<div class="guide-container">
+    <div class="guide-header">
+        <h1>네이버 부동산 크롤링 서비스 사용 설명서</h1>
+        <p>빠른 시작 가이드</p>
+    </div>
+    
+    <div class="guide-content">
+        <section class="guide-section">
+            <h2>1. 시스템 요구사항</h2>
+            <ul>
+                <li><strong>Python:</strong> 3.8 이상</li>
+                <li><strong>브라우저:</strong> Chrome, Firefox, Edge 등 최신 브라우저</li>
+                <li><strong>인터넷:</strong> 안정적인 인터넷 연결</li>
+                <li><strong>필수 라이브러리:</strong> requirements.txt에 정의된 패키지</li>
+            </ul>
+        </section>
+        
+        <section class="guide-section">
+            <h2>2. 설치 방법</h2>
+            <div class="code-block">
+                <h3>1) 프로젝트 복사</h3>
+                <pre><code>git clone &lt;저장소 URL&gt;
+cd real-estate</code></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3>2) 가상환경 생성 (권장)</h3>
+                <pre><code>python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate</code></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3>3) 패키지 설치</h3>
+                <pre><code>pip install -r requirements.txt</code></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3>4) ChromeDriver 설치 (Selenium 사용 시)</h3>
+                <p>Chrome 브라우저가 설치되어 있어야 합니다. ChromeDriver는 자동으로 설치됩니다.</p>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>3. 실행 방법</h2>
+            <div class="code-block">
+                <h3>1) 서버 시작</h3>
+                <pre><code>uvicorn app.main:app --reload --host 0.0.0.0 --port 8000</code></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3>2) 브라우저에서 접속</h3>
+                <pre><code>http://localhost:8000</code></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3>3) API 문서 확인</h3>
+                <pre><code>http://localhost:8000/docs</code></pre>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>4. 사용법 요약</h2>
+            
+            <div class="feature-guide">
+                <h3>🗺️ 검색 기능</h3>
+                <ol>
+                    <li>홈페이지에서 검색할 지역을 입력합니다 (예: "강남구", "마포구")</li>
+                    <li>"+" 버튼을 클릭하여 여러 지역을 추가할 수 있습니다</li>
+                    <li>지도를 클릭하여 위치를 선택할 수도 있습니다</li>
+                    <li>필터를 설정하여 가격대, 면적, 매물 유형을 제한할 수 있습니다</li>
+                    <li>"검색 시작" 버튼을 클릭합니다</li>
+                </ol>
+            </div>
+            
+            <div class="feature-guide">
+                <h3>📊 지도 조작</h3>
+                <ul>
+                    <li><strong>확대/축소:</strong> 마우스 휠 또는 +/- 버튼</li>
+                    <li><strong>이동:</strong> 마우스 드래그</li>
+                    <li><strong>마커 정보:</strong> 마커 클릭 시 상세 정보 표시</li>
+                    <li><strong>여러 지역:</strong> 여러 지역을 선택하면 모든 지역의 매물이 표시됩니다</li>
+                </ul>
+            </div>
+            
+            <div class="feature-guide">
+                <h3>💾 데이터 내보내기</h3>
+                <ol>
+                    <li>검색 결과가 표시된 상태에서 "내보내기" 버튼을 클릭합니다</li>
+                    <li>내보내기 형식을 선택합니다 (CSV 또는 Excel)</li>
+                    <li>파일이 자동으로 다운로드됩니다</li>
+                </ol>
+            </div>
+            
+            <div class="feature-guide">
+                <h3>🔔 알림 설정</h3>
+                <ol>
+                    <li>브라우저 알림 권한을 허용합니다</li>
+                    <li>특정 조건(가격 변동, 새 매물 등)을 설정합니다</li>
+                    <li>조건 충족 시 브라우저 알림이 발송됩니다</li>
+                </ol>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>5. 주요 기능 설명</h2>
+            
+            <div class="function-list">
+                <div class="function-item">
+                    <h4>다중 지역 검색</h4>
+                    <p>여러 지역을 동시에 검색하여 비교할 수 있습니다. 각 지역의 매물 정보를 한눈에 파악하세요.</p>
+                </div>
+                
+                <div class="function-item">
+                    <h4>실시간 데이터</h4>
+                    <p>네이버 부동산에서 최신 매물 정보를 실시간으로 수집합니다. 캐시를 통해 빠른 응답을 제공합니다.</p>
+                </div>
+                
+                <div class="function-item">
+                    <h4>상세 필터</h4>
+                    <p>가격대, 면적, 매물 유형 등 다양한 조건으로 검색 결과를 필터링할 수 있습니다.</p>
+                </div>
+                
+                <div class="function-item">
+                    <h4>데이터 시각화</h4>
+                    <p>검색 결과를 차트와 그래프로 시각화하여 통계 정보를 쉽게 파악할 수 있습니다.</p>
+                </div>
+                
+                <div class="function-item">
+                    <h4>반응형 디자인</h4>
+                    <p>데스크톱, 태블릿, 모바일 등 모든 기기에서 최적화된 화면을 제공합니다.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>6. FAQ (자주 묻는 질문)</h2>
+            
+            <div class="faq-list">
+                <div class="faq-item">
+                    <h4>Q: 크롤링이 작동하지 않아요</h4>
+                    <p><strong>A:</strong> 네이버 부동산의 페이지 구조가 변경되었을 수 있습니다. 크롤링 속도 제한을 위해 지연 시간을 늘려보세요 (.env 파일에서 CRAWLER_DELAY 값 조정). 또한, Selenium을 사용해보세요 (use_selenium=True).</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Q: 지도가 로드되지 않아요</h4>
+                    <p><strong>A:</strong> 인터넷 연결을 확인하세요. 방화벽이 OpenStreetMap을 차단할 수 있습니다. 브라우저 개발자 도구(F12)에서 오류 메시지를 확인해주세요.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Q: 데이터가 최신이 아니에요</h4>
+                    <p><strong>A:</strong> 캐시된 데이터가 오래되었을 수 있습니다. "데이터 업데이트" 버튼을 클릭하거나, 캐시 폴더를 삭제한 후 다시 검색하세요.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Q: 검색 속도가 느려요</h4>
+                    <p><strong>A:</strong> 검색할 지역이 많거나, 네이버 서버 응답이 느린 경우입니다. 필터를 사용하여 검색 범위를 줄이거나, 캐시를 활용하세요.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Q: 내보내기 파일이 열리지 않아요</h4>
+                    <p><strong>A:</strong> Excel이 설치되어 있는지 확인하세요. CSV 파일은 메모장으로도 열 수 있습니다. 인코딩 문제가 발생할 수 있으므로 UTF-8로 저장된 파일을 여세요.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>7. 기술 스택</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <h4>Backend</h4>
+                    <ul>
+                        <li>FastAPI</li>
+                        <li>Python 3.8+</li>
+                        <li>Uvicorn</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-item">
+                    <h4>Crawling</h4>
+                    <ul>
+                        <li>Requests</li>
+                        <li>Selenium</li>
+                        <li>BeautifulSoup4</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-item">
+                    <h4>Frontend</h4>
+                    <ul>
+                        <li>HTML5, CSS3, JavaScript</li>
+                        <li>Leaflet.js (지도)</li>
+                        <li>Chart.js (차트)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-item">
+                    <h4>Data</h4>
+                    <ul>
+                        <li>JSON (캐시)</li>
+                        <li>CSV/Excel (내보내기)</li>
+                        <li>Pandas</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>8. 크롤링 윤리</h2>
+            <div class="ethics-notice">
+                <p><strong>⚠️ 중요:</strong> 이 서비스는 네이버 부동산의 데이터를 크롤링합니다. 다음 사항을 준수해주세요:</p>
+                <ul>
+                    <li>robots.txt 파일의 규정을 준수하세요</li>
+                    <li>과도한 요청을 보내지 마세요 (rate limiting)</li>
+                    <li>서버에 과도한 부하를 주지 않도록 적절한 지연 시간을 설정하세요</li>
+                    <li>수집한 데이터를 상업적으로 무단 사용하지 마세요</li>
+                    <li>저작권 및 이용약관을 준수하세요</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>9. 문제 해결</h2>
+            <div class="troubleshooting">
+                <div class="issue">
+                    <h4>Python 패키지 설치 오류</h4>
+                    <pre><code># pip 업그레이드
+pip install --upgrade pip
+
+# 특정 패키지 설치
+pip install --upgrade fastapi uvicorn</code></pre>
+                </div>
+                
+                <div class="issue">
+                    <h4>Selenium ChromeDriver 오류</h4>
+                    <pre><code># webdriver-manager 사용 (자동 설치)
+pip install webdriver-manager
+
+# Python 코드에서 사용
+from webdriver_manager.chrome import ChromeDriverManager
+driver = webdriver.Chrome(ChromeDriverManager().install())</code></pre>
+                </div>
+                
+                <div class="issue">
+                    <h4>포트 충돌</h4>
+                    <pre><code># 다른 포트 사용
+uvicorn app.main:app --port 8001</code></pre>
+                </div>
+            </div>
+        </section>
+        
+        <section class="guide-section">
+            <h2>10. 추가 정보</h2>
+            <ul>
+                <li><strong>API 문서:</strong> <a href="/docs" target="_blank">http://localhost:8000/docs</a></li>
+                <li><strong>대체 문서:</strong> <a href="/redoc" target="_blank">http://localhost:8000/redoc</a></li>
+                <li><strong>소스 코드:</strong> GitHub 저장소</li>
+                <li><strong>문의:</strong> 이슈 트래커 사용</li>
+            </ul>
+        </section>
+    </div>
+    
+    <div class="guide-footer">
+        <p>이 설명서는 네이버 부동산 크롤링 서비스 버전 1.0.0을 기준으로 작성되었습니다.</p>
+        <p>업데이트 날짜: 2026년 3월</p>
+    </div>
+</div>
+
+<style>
+    .guide-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .guide-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #00c73c;
+    }
+    
+    .guide-header h1 {
+        color: #00c73c;
+        margin-bottom: 0.5rem;
+    }
+    
+    .guide-section {
+        margin-bottom: 3rem;
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .guide-section h2 {
+        color: #333;
+        border-bottom: 2px solid #00c73c;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .code-block {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #00c73c;
+    }
+    
+    .code-block pre {
+        margin: 0;
+        overflow-x: auto;
+    }
+    
+    .code-block code {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        color: #333;
+    }
+    
+    .feature-guide {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .function-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    .function-item {
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+    }
+    
+    .function-item h4 {
+        color: #00c73c;
+        margin-bottom: 0.5rem;
+    }
+    
+    .faq-list .faq-item {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .faq-item h4 {
+        color: #00c73c;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tech-stack {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .tech-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .ethics-notice {
+        background: #fff3cd;
+        padding: 1.5rem;
+        border-radius: 4px;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .troubleshooting .issue {
+        margin-bottom: 1rem;
+    }
+    
+    .troubleshooting pre {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+    
+    .guide-footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .guide-container {
+            padding: 1rem;
+        }
+        
+        .guide-section {
+            padding: 1rem;
+        }
+        
+        .function-list,
+        .tech-stack {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

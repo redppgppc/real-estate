@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}홈 - 네이버 부동산 크롤링{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>네이버 부동산 크롤링 서비스</h1>
+    <p>네이버 부동산의 최신 매물 정보를 지도에서 한눈에 확인하세요</p>
+    
+    <div class="search-box">
+        <div class="search-input">
+            <input type="text" id="location-input" placeholder="지역을 입력하세요 (예: 강남구, 마포구)">
+            <button id="add-location-btn">+</button>
+        </div>
+        <div id="selected-locations" class="selected-locations"></div>
+        <button id="search-btn" class="search-btn">검색 시작</button>
+    </div>
+</div>
+
+<div class="features">
+    <div class="feature">
+        <h3>🗺️ 지도 기반 검색</h3>
+        <p>클릭 한 번으로 원하는 지역의 부동산 정보를 확인하세요</p>
+    </div>
+    <div class="feature">
+        <h3>📊 실시간 데이터</h3>
+        <p>네이버 부동산에서 실시간으로 최신 정보를 수집합니다</p>
+    </div>
+    <div class="feature">
+        <h3>📱 모바일 지원</h3>
+        <p>어디서나 스마트폰으로 편리하게 이용하세요</p>
+    </div>
+</div>
+
+<div class="stats">
+    <h2>서비스 통계</h2>
+    <div class="stat-cards">
+        <div class="stat-card">
+            <h3 id="total-properties">0</h3>
+            <p>총 매물 수</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="total-locations">0</h3>
+            <p>검색 지역 수</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="today-updates">0</h3>
+            <p>오늘 업데이트</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 지역 추가 기능
+    const locationInput = document.getElementById('location-input');
+    const addLocationBtn = document.getElementById('add-location-btn');
+    const selectedLocations = document.getElementById('selected-locations');
+    const searchBtn = document.getElementById('search-btn');
+    
+    let locations = [];
+    
+    addLocationBtn.addEventListener('click', addLocation);
+    locationInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addLocation();
+    });
+    
+    function addLocation() {
+        const location = locationInput.value.trim();
+        if (location && !locations.includes(location)) {
+            locations.push(location);
+            updateLocationTags();
+            locationInput.value = '';
+        }
+    }
+    
+    function updateLocationTags() {
+        selectedLocations.innerHTML = locations.map(loc => `
+            <span class="location-tag">
+                ${loc}
+                <button onclick="removeLocation('${loc}')">&times;</button>
+            </span>
+        `).join('');
+        
+        document.getElementById('total-locations').textContent = locations.length;
+    }
+    
+    function removeLocation(location) {
+        locations = locations.filter(loc => loc !== location);
+        updateLocationTags();
+    }
+    
+    searchBtn.addEventListener('click', () => {
+        if (locations.length > 0) {
+            // 검색 페이지로 이동
+            const locationParam = encodeURIComponent(JSON.stringify(locations));
+            window.location.href = `/search?locations=${locationParam}`;
+        } else {
+            alert('하나 이상의 지역을 입력해주세요.');
+        }
+    });
+</script>
+{% endblock %}

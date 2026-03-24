@@ -100,8 +100,39 @@ This repository is a Unity project.
 
 ---
 
+## Python Specific Rules (파이썬 특화 규칙)
+
+- 작업 범위:
+  - `app/**`
+  - `crawler/**`
+  - `static/**`
+  - `templates/**`
+  - `requirements.txt`
+  - `*.py`
+
+- 수정 가능:
+  - 모든 Python 스크립트
+  - HTML, CSS, JavaScript 파일
+  - 설정 파일 (제외: `.env`, 비밀 키)
+
+- 제한:
+  - `.env` 파일 (읽기 전용, 수정 금지)
+  - 비밀 키, API 키 (노출 금지)
+  - 외부 서비스 인증 정보
+
+- 금지:
+  - 크롤링 속도 제한 무시
+  - 네이버 서비스 이용약관 위반
+  - 지나친 빈도의 크롤링 (rate limiting)
+
+- 크롤링 윤리:
+  - robots.txt 존중
+  - 합리적인 요청 빈도 유지
+  - 서버에 과도한 부하 주지 않기
+
 ## 중요 원칙 (Important)
 
 - 최소 변경 (Minimal change)
 - 안전 우선 (Safety first)
 - 명확한 설명 (Clear explanation)
+- 크롤링 윤리 준수 (Crawling ethics)

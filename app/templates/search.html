@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}검색 - 네이버 부동산 크롤링{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-header">
+        <h1>부동산 검색</h1>
+        <p>여러 지역을 동시에 검색할 수 있습니다</p>
+    </div>
+    
+    <div class="search-controls">
+        <div class="location-search">
+            <div class="search-input">
+                <input type="text" id="location-input" placeholder="지역을 입력하세요 (예: 강남구, 마포구, 서초구)">
+                <button id="add-location-btn">+</button>
+            </div>
+            <div id="selected-locations" class="selected-locations"></div>
+        </div>
+        
+        <div class="filters">
+            <h3>검색 필터</h3>
+            <div class="filter-group">
+                <label>매물 유형</label>
+                <select id="property-type">
+                    <option value="">전체</option>
+                    <option value="apartment">아파트</option>
+                    <option value="villa">빌라</option>
+                    <option value="house">주택</option>
+                    <option value="officetel">오피스텔</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>가격 범위 (만원)</label>
+                <div class="range-inputs">
+                    <input type="number" id="price-min" placeholder="최소">
+                    <span>~</span>
+                    <input type="number" id="price-max" placeholder="최대">
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label>면적 범위 (㎡)</label>
+                <div class="range-inputs">
+                    <input type="number" id="area-min" placeholder="최소">
+                    <span>~</span>
+                    <input type="number" id="area-max" placeholder="최대">
+                </div>
+            </div>
+            
+            <button id="search-btn" class="search-btn">검색 시작</button>
+        </div>
+    </div>
+    
+    <div class="results-container">
+        <div class="map-container">
+            <div id="map" style="height: 500px; width: 100%;"></div>
+        </div>
+        
+        <div class="results-panel">
+            <div class="results-header">
+                <h2>검색 결과 <span id="results-count">0</span>건</h2>
+                <button id="export-btn" class="export-btn">내보내기</button>
+            </div>
+            
+            <div id="property-list" class="property-list">
+                <p class="no-results">검색 결과가 없습니다. 지역을 입력하고 검색해주세요.</p>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- 페이지네이션 추가 예정 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 통계 모달 -->
+<div id="stats-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>검색 통계</h2>
+        <div id="stats-content"></div>
+        <div class="chart-container">
+            <canvas id="price-chart" width="400" height="200"></canvas>
+            <canvas id="area-chart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/search.js"></script>
+{% endblock %}

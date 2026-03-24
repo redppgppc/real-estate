@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네이버 부동산 크롤링 서비스 - 코드 플로우차트</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #00c73c 0%, #00a029 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            border-left: 5px solid #00c73c;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2:before {
+            content: "●";
+            color: #00c73c;
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        
+        .description {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .description h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .legend {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .legend h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .legend ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .legend li {
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend li:before {
+            content: "■";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .tech-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .tech-card h4 {
+            color: #00c73c;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>네이버 부동산 크롤링 서비스</h1>
+            <p>시스템 아키텍처 및 코드 플로우차트</p>
+        </header>
+        
+        <div class="content">
+            <!-- 시스템 아키텍처 -->
+            <div class="section">
+                <h2>시스템 아키텍처</h2>
+                
+                <div class="description">
+                    <h3>개요</h3>
+                    <p>이 시스템은 네이버 부동산과 국토교통부 공공 API에서 부동산 데이터를 수집하여 지도 기반 인터페이스로 제공하는 웹 애플리케이션입니다.</p>
+                </div>
+                
+                <div class="mermaid">
+                    graph TB
+                        A[사용자] --> B[브라우저]
+                        B --> C[정적 파일<br/>HTML/CSS/JS]
+                        B --> D[FastAPI 서버]
+                        
+                        subgraph "프론트엔드"
+                            C --> E[Leaflet.js 지도]
+                            C --> F[Chart.js 차트]
+                            C --> G[반응형 UI]
+                        end
+                        
+                        subgraph "백엔드"
+                            D --> H[API 라우터]
+                            H --> I[크롤링 서비스]
+                            I --> J[네이버 부동산 크롤러]
+                            I --> K[국토교통부 크롤러]
+                            I --> L[캐시 시스템]
+                        end
+                        
+                        subgraph "외부 서비스"
+                            J --> M[네이버 부동산 API]
+                            K --> N[국토교통부 공공 API]
+                        end
+                        
+                        subgraph "데이터 저장소"
+                            L --> O[JSON 캐시 파일]
+                            H --> P[CSV/Excel 내보내기]
+                        end
+                        
+                        style A fill:#e1f5fe
+                        style B fill:#f3e5f5
+                        style D fill:#e8f5e8
+                        style M fill:#fff3e0
+                        style N fill:#fff3e0
+                        style O fill:#f1f8e9
+                        style P fill:#f1f8e9
+                </div>
+                
+                <div class="legend">
+                    <h3>범례</h3>
+                    <ul>
+                        <li><span style="color: #e1f5fe;">■</span> 사용자</li>
+                        <li><span style="color: #f3e5f5;">■</span> 클라이언트</li>
+                        <li><span style="color: #e8f5e8;">■</span> 서버</li>
+                        <li><span style="color: #fff3e0;">■</span> 외부 API</li>
+                        <li><span style="color: #f1f8e9;">■</span> 데이터 저장소</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 데이터 흐름도 -->
+            <div class="section">
+                <h2>데이터 흐름도</h2>
+                
+                <div class="description">
+                    <h3>개요</h3>
+                    <p>사용자의 검색 요청부터 결과 표시까지의 데이터 흐름을 보여줍니다.</p>
+                </div>
+                
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant User as 사용자
+                        participant FE as 프론트엔드
+                        participant API as FastAPI 서버
+                        participant CS as 크롤링 서비스
+                        participant Cache as 캐시 시스템
+                        participant Ext as 외부 API
+                        
+                        User->>FE: 지역 선택 & 검색 요청
+                        FE->>API: GET /api/v1/search?locations=...
+                        
+                        API->>CS: search_properties()
+                        
+                        loop 각 지역별
+                            CS->>Cache: 캐시 확인
+                            alt 캐시 존재 & 유효
+                                Cache-->>CS: 캐시된 데이터 반환
+                            else 캐시 없음 or 만료
+                                CS->>Ext: 크롤링 요청
+                                alt 네이버 부동산 성공
+                                    Ext-->>CS: 매물 데이터
+                                else 실패 (429 오류)
+                                    CS->>CS: 더미 데이터 생성
+                                end
+                                CS->>Cache: 새 데이터 캐시 저장
+                            end
+                        end
+                        
+                        CS-->>API: 매물 목록 반환
+                        API-->>FE: JSON 응답
+                        FE->>User: 지도 및 목록 표시
+                        FE->>User: 차트 시각화
+                </div>
+            </div>
+            
+            <!-- API 엔드포인트 흐름 -->
+            <div class="section">
+                <h2>API 엔드포인트 흐름</h2>
+                
+                <div class="description">
+                    <h3>개요</h3>
+                    <p>RESTful API 엔드포인트별 요청/응답 흐름을 보여줍니다.</p>
+                </div>
+                
+                <div class="mermaid">
+                    flowchart TD
+                        A[API 요청 시작] --> B{엔드포인트 분기}
+                        
+                        B --> C["GET /api/v1/search"]
+                        B --> D["GET /api/v1/properties/{id}"]
+                        B --> E["GET /api/v1/export"]
+                        B --> F["GET /api/v1/stats"]
+                        B --> G["POST /api/v1/update"]
+                        
+                        C --> C1[파라미터 검증]
+                        C1 --> C2[지역 목록 파싱]
+                        C2 --> C3[필터 적용]
+                        C3 --> C4[크롤링 서비스 호출]
+                        C4 --> C5[결과 변환]
+                        C5 --> C6[JSON 응답]
+                        
+                        D --> D1[매물 ID 추출]
+                        D1 --> D2[캐시 파일 검색]
+                        D2 --> D3[매물 찾기]
+                        D3 --> D4[JSON 응답]
+                        
+                        E --> E1[내보내기 형식 확인]
+                        E1 --> E2[매물 ID 수집]
+                        E2 --> E3[데이터 변환]
+                        E3 --> E4[파일 생성]
+                        E4 --> E5[파일 다운로드]
+                        
+                        F --> F1[캐시 파일 스캔]
+                        F1 --> F2[통계 계산]
+                        F2 --> F3[JSON 응답]
+                        
+                        G --> G1[전체 지역 업데이트]
+                        G1 --> G2[크롤링 실행]
+                        G2 --> G3[캐시 갱신]
+                        G3 --> G4[완료 응답]
+                        
+                        style A fill:#e1f5fe
+                        style C fill:#e8f5e8
+                        style D fill:#e8f5e8
+                        style E fill:#e8f5e8
+                        style F fill:#e8f5e8
+                        style G fill:#e8f5e8
+                </div>
+            </div>
+            
+            <!-- 크롤링 프로세스 흐름 -->
+            <div class="section">
+                <h2>크롤링 프로세스 흐름</h2>
+                
+                <div class="description">
+                    <h3>개요</h3>
+                    <p>크롤러가 외부 API에서 데이터를 수집하는 과정을 보여줍니다.</p>
+                </div>
+                
+                <div class="mermaid">
+                    stateDiagram-v2
+                        [*] --> 초기화: 크롤러 인스턴스 생성
+                        
+                        初始化 --> 대기: 설정 완료
+                        대기 --> 지역코드조회: 검색 요청
+                        지역코드조회 --> API호출: 지역 코드 확보
+                        API호출 --> 응답대기: HTTP 요청 전송
+                        
+                        state 응답대기 {
+                            [*] --> 성공
+                            [*] --> 실패: 429 Too Many Requests
+                            [*] --> 실패: 타임아웃
+                            [*] --> 실패: 네트워크 오류
+                            
+                            성공 --> 데이터파싱: JSON 응답
+                            데이터파싱 --> 완료: 매물 목록 추출
+                            
+                            실패 --> 재시도: 재시도 횟수 < 최대
+                            재시도 --> API호출: User-Agent 변경
+                            재시도 --> 실패처리: 재시도 횟수 초과
+                        }
+                        
+                        응답대기 --> 결과처리: 파싱 완료
+                        결과처리 --> Selenium전환: 매물 없음
+                        Selenium전환 --> Selenium크롤링: JavaScript 렌더링
+                        Selenium크롤링 --> 결과처리: Selenium 결과
+                        
+                        결과처리 --> 완료: 최종 결과
+                        실패처리 --> 완료: 빈 결과
+                        
+                        완료 --> [*]: 결과 반환
+                </div>
+            </div>
+            
+            <!-- 사용자 인터페이스 흐름 -->
+            <div class="section">
+                <h2>사용자 인터페이스 흐름</h2>
+                
+                <div class="description">
+                    <h3>개요</h3>
+                    <p>사용자가 애플리케이션을 사용하는 과정을 보여줍니다.</p>
+                </div>
+                
+                <div class="mermaid">
+                    journey
+                        title 네이버 부동산 크롤링 서비스 사용 여정
+                        section 서비스 접근
+                            웹사이트 접속: 5: 사용자
+                            검색 페이지 이동: 4: 사용자
+                        section 검색 설정
+                            지역 입력: 5: 사용자
+                            여러 지역 추가: 4: 사용자
+                            필터 설정: 3: 사용자
+                        section 검색 실행
+                            검색 버튼 클릭: 5: 사용자
+                            로딩 표시: 3: 시스템
+                            결과 표시: 5: 사용자
+                        section 결과 확인
+                            지도에서 위치 확인: 5: 사용자
+                            매물 목록 확인: 4: 사용자
+                            통계 차트 확인: 4: 사용자
+                        section 데이터 활용
+                            데이터 내보내기: 3: 사용자
+                            알림 설정: 2: 사용자
+                </div>
+            </div>
+            
+            <!-- 기술 스택 -->
+            <div class="section">
+                <h2>기술 스택</h2>
+                
+                <div class="tech-stack">
+                    <div class="tech-card">
+                        <h4>Backend</h4>
+                        <ul style="text-align: left; list-style: none;">
+                            <li>• FastAPI 0.104.1</li>
+                            <li>• Python 3.13</li>
+                            <li>• Uvicorn 0.24.0</li>
+                            <li>• Requests 2.31.0</li>
+                            <li>• Selenium 4.15.2</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-card">
+                        <h4>Frontend</h4>
+                        <ul style="text-align: left; list-style: none;">
+                            <li>• HTML5, CSS3, JavaScript</li>
+                            <li>• Leaflet.js 1.9.4</li>
+                            <li>• Chart.js 4.4.0</li>
+                            <li>• Jinja2 3.1.2</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-card">
+                        <h4>Data</h4>
+                        <ul style="text-align: left; list-style: none;">
+                            <li>• JSON (캐시)</li>
+                            <li>• CSV/Excel (내보내기)</li>
+                            <li>• 국토교통부 공공 API</li>
+                            <li>• 네이버 부동산 API</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-card">
+                        <h4>Tools</h4>
+                        <ul style="text-align: left; list-style: none;">
+                            <li>• Mermaid.js (다이어그램)</li>
+                            <li>• APScheduler (스케줄링)</li>
+                            <li>• BeautifulSoup4 (파싱)</li>
+                            <li>• OpenPyXL (Excel 처리)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 주요 기능 -->
+            <div class="section">
+                <h2>주요 기능</h2>
+                
+                <div class="mermaid">
+                    mindmap
+                        root((네이버 부동산<br/>크롤링 서비스))
+                            검색 기능
+                                다중 지역 검색
+                                실시간 검색
+                                필터 검색
+                            지도 기능
+                                Leaflet.js 통합
+                                마커 표시
+                                지도 조작
+                            시각화 기능
+                                Chart.js 차트
+                                통계 데이터
+                                가격 분포
+                            데이터 관리
+                                캐시 시스템
+                                정기 업데이트
+                                데이터 내보내기
+                            인터페이스
+                                반응형 디자인
+                                모바일 지원
+                                사용자 친화적
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>네이버 부동산 크롤링 서비스 문서</p>
+            <p>생성일: 2026년 3월 24일</p>
+        </footer>
+    </div>
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: false,
+                useMaxWidth: true
+            },
+            journey: {
+                useMaxWidth: true,
+                diagramMarginX: 50,
+                diagramMarginY: 20,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35
+            }
+        });
+        
+        // 다이어그램 렌더링 후 스타일 적용
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const diagrams = document.querySelectorAll('.mermaid svg');
+                diagrams.forEach(function(svg) {
+                    svg.style.maxWidth = '100%';
+                    svg.style.height = 'auto';
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
