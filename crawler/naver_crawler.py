@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
@@ -40,11 +40,15 @@ class NaverRealEstateCrawler:
     # User-Agent 리스트 (브라우저마다 다른 User-Agent 사용)
     # 로테이션을 통해 차단 회피 확률 높임
     USER_AGENTS = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',  # Chrome 122
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',  # Chrome 121
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',  # Chrome 120
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',  # Chrome 119
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',  # Mac Chrome
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',  # Firefox 121
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',  # Safari 17
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',  # Mac Chrome
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',  # Firefox 123
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',  # Firefox 122
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',  # Mac Firefox
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15',  # Safari 17.3
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0', # Edge
     ]
     
     def __init__(self, use_selenium: bool = False, headless: bool = True):
@@ -58,34 +62,52 @@ class NaverRealEstateCrawler:
         self.use_selenium = use_selenium
         self.headless = headless
         self.driver = None
-        self.session = requests.Session()
-        
-        # 랜덤 User-Agent 선택
-        user_agent = random.choice(self.USER_AGENTS)
-        
-        # 요청 헤더 설정
-        self.session.headers.update({
-            'User-Agent': user_agent,
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Referer': 'https://new.land.naver.com/',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-        })
+        self.session = None
+        self._reset_session()
         
         if use_selenium:
             self._init_selenium(headless)
+
+    def _reset_session(self):
+        """세션 초기화 (쿠키 및 헤더 재설정)"""
+        if self.session:
+            self.session.close()
+        self.session = requests.Session()
+        logger.info("세션 초기화 완료")
+
+    def _get_mobile_headers(self):
+        """모바일 환경에 맞는 깨끗한 헤더 생성"""
+        return {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://m.land.naver.com/',
+            'Origin': 'https://m.land.naver.com',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+        }
     
     def _random_delay(self, min_seconds: float = 3.0, max_seconds: float = 10.0):
         """랜덤 지연 시간 (요청 간격 조절)"""
         delay = random.uniform(min_seconds, max_seconds)
         time.sleep(delay)
     
+    def _wait_with_backoff(self, attempt: int, base_min: float = 20.0, base_max: float = 40.0):
+        """429 오류 발생 시 지수 백오프 적용 대기"""
+        multiplier = 2 ** attempt
+        delay = random.uniform(base_min, base_max) * multiplier
+        logger.warning(f"429 감지됨. {delay:.1f}초 동안 대기 후 재시도합니다. (시도 {attempt+1})")
+        time.sleep(delay)
+    
     def _rotate_user_agent(self):
-        """User-Agent 변경"""
-        user_agent = random.choice(self.USER_AGENTS)
-        self.session.headers.update({'User-Agent': user_agent})
-        logger.info(f"User-Agent 변경: {user_agent[:50]}...")
+        """User-Agent 변경 (모바일 환경의 경우 기본 설정 유지)"""
+        if self.session is None:
+            self._reset_session()
+        # 모바일 환경에서는 User-Agent 로테이션보다 일관성 있는 세션이 차단 방지에 유리함
+        pass
     
     def _init_selenium(self, headless: bool):
         """Selenium WebDriver 초기화"""
@@ -130,104 +152,187 @@ class NaverRealEstateCrawler:
         
         return properties
     
-    def _get_region_code(self, region_name: str, max_retries: int = 3) -> Optional[str]:
-        """지역 코드 조회 (네이버 API 사용)"""
-        for attempt in range(max_retries):
+    def _get_region_code(self, region_name: str, max_retries: Optional[int] = None) -> Optional[str]:
+        """지역 코드 조회 (모바일 웹 페이지 스크래핑 방식)"""
+        from app.config import settings
+        import urllib.parse
+        import re
+        retries = max_retries or settings.MAX_RETRIES
+        
+        for attempt in range(retries):
             try:
-                # 랜덤 지연 시간 추가
                 if attempt > 0:
-                    self._random_delay(5.0, 15.0)
                     self._rotate_user_agent()
+                else:
+                    self._random_delay(2.0, 5.0)
                 
-                # 지역 검색 API 호출
-                url = f"{self.API_URL}/search"
-                params = {
-                    'keyword': region_name,
-                    'page': 1
-                }
+                # 모바일 검색 페이지 호출
+                encoded_query = urllib.parse.quote(region_name)
+                url = f"https://m.land.naver.com/search/result/{encoded_query}"
                 
-                response = self.session.get(url, params=params, timeout=30)
+                if self.session is None:
+                    self._reset_session()
+                
+                # 모바일 헤더 명시적 설정
+                headers = self._get_mobile_headers()
+                
+                response = self.session.get(url, headers=headers, timeout=30) # type: ignore
+                
+                if response.status_code == 429:
+                    self._wait_with_backoff(attempt)
+                    self._reset_session()
+                    continue
+                
                 response.raise_for_status()
+                html = response.text
                 
-                data = response.json()
+                # HTML에서 cortarNo 추출
+                match = re.search(r"cortarNo\s*[:=]\s*['\"](\d+)['\"]", html)
+                if match:
+                    return match.group(1)
                 
-                # 지역 코드 파싱
-                if 'result' in data and 'regionList' in data['result']:
-                    regions = data['result']['regionList']
-                    if regions:
-                        return regions[0].get('regionCode')
-                
+                # 지역을 찾지 못한 경우
+                logger.warning(f"HTML에서 지역 코드를 찾을 수 없음: {region_name}")
                 return None
                 
             except requests.exceptions.RequestException as e:
-                logger.warning(f"지역 코드 조회 시도 {attempt + 1}/{max_retries} 실패: {e}")
-                if attempt == max_retries - 1:
+                logger.warning(f"지역 코드 조회 시도 {attempt + 1}/{retries} 실패: {e}")
+                if attempt == retries - 1:
                     logger.error(f"지역 코드 조회 최종 실패: {region_name}")
                     return None
+                
+                self._random_delay(5.0, 10.0)
+                self._reset_session()
                 continue
         
         return None
     
-    def _search_properties(self, region_code: str, max_retries: int = 2) -> List[Dict]:
-        """매물 검색"""
+    def _search_properties(self, region_code: str, max_retries: Optional[int] = None) -> List[Dict]:
+        """모바일 클러스터 API를 활용한 매물 검색 (429 차단 우회)"""
+        from app.config import settings
+        retries = max_retries or settings.MAX_RETRIES
         properties = []
         
-        for attempt in range(max_retries):
+        # 1. 클러스터 목록 조회 (해당 지역의 매물 그룹핑 정보)
+        cluster_url = "https://m.land.naver.com/cluster/clusterList"
+        cluster_params = {
+            'view': 'atcl',
+            'cortarNo': region_code,
+            'rletTpCd': 'A01',  # 아파트
+            'tradTpCd': 'A1:B1:B2', # 매매/전세/월세
+            'z': 12
+        }
+        
+        clusters = []
+        for attempt in range(retries):
             try:
-                # 랜덤 지연 시간 추가
-                if attempt > 0:
-                    self._random_delay(8.0, 20.0)
-                    self._rotate_user_agent()
+                if attempt > 0: self._rotate_user_agent()
+                else: self._random_delay(2.0, 5.0)
                 
-                # 매물 목록 API 호출
-                url = f"{self.API_URL}/articles"
-                params = {
-                    'regionCode': region_code,
-                    'type': 'A1',  # 아파트
-                    'order': 'rank',
-                    'page': 1,
-                    'limit': 20
-                }
+                if self.session is None: self._reset_session()
                 
-                response = self.session.get(url, params=params, timeout=30)
+                # 모바일 헤더 강제
+                headers = self._get_mobile_headers()
+                
+                response = self.session.get(cluster_url, params=cluster_params, headers=headers, timeout=30) # type: ignore
+                
+                if response.status_code == 429:
+                    self._wait_with_backoff(attempt)
+                    self._reset_session()
+                    continue
+                
                 response.raise_for_status()
-                
                 data = response.json()
-                
-                # 매물 파싱
-                if 'result' in data and 'list' in data['result']:
-                    for item in data['result']['list']:
-                        property_data = self._parse_property(item, region_code)
-                        if property_data:
-                            properties.append(property_data)
-                
-                logger.info(f"매물 {len(properties)}개 검색됨")
-                break  # 성공하면 루프 탈출
-                
-            except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 429:
-                    logger.warning(f"429 Too Many Requests - 시도 {attempt + 1}/{max_retries}")
-                    if attempt == max_retries - 1:
-                        logger.error("매물 검색 최종 실패 (429)")
-                        break
-                else:
-                    logger.error(f"매물 검색 HTTP 오류: {e}")
-                    break
-            except Exception as e:
-                logger.error(f"매물 검색 실패: {e}")
+                clusters = data.get('data', {}).get('ARTICLE', [])
+                logger.info(f"지역코드 {region_code}에서 클러스터 {len(clusters)}개 발견")
                 break
+                
+            except Exception as e:
+                logger.error(f"클러스터 검색 실패: {e}")
+                if attempt == retries - 1:
+                    return properties
+                self._random_delay(5.0, 10.0)
+                self._reset_session()
         
-        # 매물이 없으면 Selenium으로 재시도
-        if not properties and self.use_selenium and self.driver:
-            logger.info("Selenium으로 재시도...")
-            properties = self._search_properties_selenium(region_code)
+        if not clusters:
+            return properties
+            
+        # 2. 각 클러스터별로 매물 상세 목록 조회 (최대 10개 클러스터만 수집하여 부하 방지)
+        for idx, cluster in enumerate(clusters[:10]):
+            lgeo = cluster.get('lgeo')
+            lat, lon = cluster.get('lat'), cluster.get('lon')
+            if not lgeo or not lat or not lon:
+                continue
+                
+            page = 1
+            has_more = True
+            
+            while has_more and page <= 5:  # 클러스터당 최대 5페이지(100개)만 수집
+                for attempt in range(retries):
+                    try:
+                        self._random_delay(1.5, 3.5)
+                        
+                        list_url = "https://m.land.naver.com/cluster/ajax/articleList"
+                        list_params = {
+                            'itemId': lgeo,
+                            'rletTpCd': 'A01',
+                            'tradTpCd': 'A1:B1:B2',
+                            'z': 12,
+                            'lat': lat,
+                            'lon': lon,
+                            'btm': float(lat) - 0.1,
+                            'lft': float(lon) - 0.1,
+                            'top': float(lat) + 0.1,
+                            'rgt': float(lon) + 0.1,
+                            'page': page
+                        }
+                        
+                        if self.session is None: self._reset_session()
+                        
+                        headers = self._get_mobile_headers()
+                        
+                        res = self.session.get(list_url, params=list_params, headers=headers, timeout=30) # type: ignore
+                        
+                        if res.status_code == 429:
+                            self._wait_with_backoff(attempt)
+                            self._reset_session()
+                            continue
+                            
+                        res.raise_for_status()
+                        list_data = res.json()
+                        
+                        items = list_data.get('body', [])
+                        for item in items:
+                            property_data = self._parse_property(item, region_code)
+                            if property_data:
+                                properties.append(property_data)
+                        
+                        has_more = list_data.get('more', False)
+                        page += 1
+                        break  # 성공 시 재시도 루프 탈출
+                        
+                    except Exception as e:
+                        logger.error(f"매물 목록 수집 실패 (클러스터 {idx}, 페이지 {page}): {e}")
+                        if attempt == retries - 1:
+                            has_more = False
+                            break
+                        self._random_delay(3.0, 8.0)
+                        self._reset_session()
         
-        return properties
+        logger.info(f"총 {len(properties)}개 매물 수집 완료")
+        
+        # 중복 제거 (id 기준)
+        unique_properties = {p['id']: p for p in properties}.values()
+        return list(unique_properties)
     
     def _search_properties_selenium(self, region_code: str) -> List[Dict]:
         """Selenium을 사용한 매물 검색"""
         properties = []
         
+        if not self.driver:
+            logger.error("Selenium WebDriver가 초기화되지 않았습니다.")
+            return []
+            
         try:
             # 네이버 부동산 페이지 접속
             url = f"{self.BASE_URL}/articles?cortarNo={region_code}"
@@ -258,20 +363,27 @@ class NaverRealEstateCrawler:
         return properties
     
     def _parse_property(self, item: Dict, region_code: str) -> Optional[Dict]:
-        """매물 데이터 파싱 (JSON 응답)"""
+        """매물 데이터 파싱 (모바일 JSON 응답)"""
         try:
+            # 가격 계산 (모바일 API의 경우 prc 필드가 정수로 직접 제공됨)
+            price = item.get('prc')
+            if price is None or price == 0:
+                price = self._parse_price(item.get('prcInfo', item.get('dealPrice', 0)))
+                
             return {
-                'id': item.get('articleNo', ''),
-                'title': item.get('articleName', ''),
-                'location': item.get('address', ''),
-                'price': self._parse_price(item.get('dealPrice', 0)),
-                'area': float(item.get('area', 0)),
-                'description': item.get('description', ''),
-                'url': f"{self.BASE_URL}/articles/{item.get('articleNo', '')}",
+                'id': item.get('atclNo', item.get('articleNo', '')),
+                'title': item.get('atclNm', item.get('articleName', '')),
+                'location': item.get('address', ''), # 모바일 API에는 상세 주소가 없을 수 있음
+                'price': price,
+                'area': float(item.get('spc2', item.get('area', 0))),
+                'description': item.get('atclFetrDesc', item.get('description', '')),
+                'url': f"https://m.land.naver.com/article/info/{item.get('atclNo', item.get('articleNo', ''))}",
                 'crawled_at': datetime.now().isoformat(),
                 'region_code': region_code,
-                'property_type': item.get('realEstateType', ''),
-                'trade_type': item.get('tradeType', ''),
+                'property_type': item.get('rletTpNm', item.get('realEstateType', '아파트')),
+                'trade_type': item.get('tradTpNm', item.get('tradeType', '')),
+                'floor': item.get('flrInfo', ''),
+                'direction': item.get('direction', '')
             }
         except Exception as e:
             logger.error(f"매물 데이터 파싱 실패: {e}")
@@ -344,7 +456,8 @@ class NaverRealEstateCrawler:
         """리소스 정리"""
         if self.driver:
             self.driver.quit()
-        self.session.close()
+        if self.session:
+            self.session.close()
         logger.info("크롤러 종료")
 
 # 사용 예시

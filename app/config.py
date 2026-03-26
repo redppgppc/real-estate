@@ -34,9 +34,9 @@ class Settings:
     ALLOWED_ORIGINS: list = ["*"]  # 모든 Origins 허용 (개발용), 프로덕션에서는 구체적으로 지정
     
     # 크롤링 설정
-    CRAWLER_DELAY: int = int(os.getenv("CRAWLER_DELAY", "10"))    # 크롤링 지연 시간 (초), 429 오류 방지
+    CRAWLER_DELAY: int = int(os.getenv("CRAWLER_DELAY", "15"))    # 크롤링 지연 시간 (초), 429 오류 방지 (기본 15초로 상향)
     CRAWLER_TIMEOUT: int = int(os.getenv("CRAWLER_TIMEOUT", "30")) # HTTP 요청 타임아웃 (초)
-    MAX_RETRIES: int = int(os.getenv("MAX_RETRIES", "3"))         # 최대 재시도 횟수
+    MAX_RETRIES: int = int(os.getenv("MAX_RETRIES", "5"))         # 최대 재시도 횟수 (기본 5회로 상향)
     
     # 데이터 저장소 설정
     DATA_DIR: str = "app/data"          # 내보내기 파일 저장 디렉토리

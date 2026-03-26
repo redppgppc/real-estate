@@ -1,14 +1,16 @@
+import logging
 from crawler.naver_crawler import NaverRealEstateCrawler
 
-try:
-    crawler = NaverRealEstateCrawler(use_selenium=False)
-    properties = crawler.search_region("강남구")
-    print(f"Found {len(properties)} properties")
-    if properties:
-        for prop in properties[:3]:
-            print(f" - {prop['title']}: {prop['price']}만원")
+logging.basicConfig(level=logging.INFO)
+
+def test():
+    crawler = NaverRealEstateCrawler()
+    print("Searching for '대치동'...")
+    properties = crawler.search_region("대치동")
+    print(f"Found {len(properties)} properties!")
+    for p in properties[:5]:
+        print(f"[{p['trade_type']}] {p['title']} - {p['price']}만원 ({p['area']}㎡)")
     crawler.close()
-except Exception as e:
-    print(f"Crawler error: {e}")
-    import traceback
-    traceback.print_exc()
+
+if __name__ == "__main__":
+    test()
